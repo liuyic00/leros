@@ -3,6 +3,14 @@ APP=base
 TESTS="base lhi lhi2 lognosign reg imm mem"
 TESTPATH=asm
 
+formal:
+	make hw
+	cd generated ;\
+	$$FIRRTL -i Leros.hi.fir -E low -fil Leros -o Leros.il.lo.fir ;\
+	$$FIRRTL -i Leros.hi.fir -E low ;\
+	$$FIRRTL -i Leros.hi.fir -E verilog ;\
+	$$FIRRTL -i Leros.hi.fir -E sverilog
+
 hwsim:
 	sbt -Dprogram=$(APP) "testOnly leros.LerosTest"
 
