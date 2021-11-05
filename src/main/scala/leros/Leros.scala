@@ -12,31 +12,26 @@ import chisel3.experimental.ChiselEnum
 
 import leros.util._
 
-
-
-
 class Debug extends Bundle {
-  val acc = Output(UInt())
-  val pc = Output(UInt())
+  val acc   = Output(UInt())
+  val pc    = Output(UInt())
   val instr = Output(UInt())
-  val exit = Output(Bool())
+  val exit  = Output(Bool())
 }
 
-/**
-  * Instruction memory.
-  * Contains the register for using the on-chip ROM.
-  * Uses Chisel synchronous reset to also execute the first instruction.
+/** Instruction memory. Contains the register for using the on-chip ROM. Uses Chisel synchronous reset to also execute
+  * the first instruction.
   *
   * FIXME: Verilog generation from Chisel results in logic, not in a ROM.
   */
 class InstrMem(memAddrWidth: Int, prog: String) extends Module {
   val io = IO(new Bundle {
-    val addr = Input(UInt(memAddrWidth.W))
+    val addr  = Input(UInt(memAddrWidth.W))
     val instr = Output(UInt(16.W))
   })
   val progMem = VecInit(Assembler.getProgram(prog).map(_.asUInt(16.W)))
-  val memReg = RegInit(0.U(memAddrWidth.W))
-  memReg := io.addr
+  val memReg  = RegInit(0.U(memAddrWidth.W))
+  memReg   := io.addr
   io.instr := progMem(memReg)
 }
 
@@ -44,16 +39,15 @@ object State extends ChiselEnum {
   val feDec, exe = Value
 }
 
-/**
-  * Leros top level.
+/** Leros top level.
   *
-  * For now do a first sequential implementation.
-  * Later have Leros as abstract class with base state and several implementations (different pipelines).
+  * For now do a first sequential implementation. Later have Leros as abstract class with base state and several
+  * implementations (different pipelines).
   */
 class Leros(size: Int, memSize: Int, prog: String, fmaxReg: Boolean) extends Module {
   val io = IO(new Bundle {
     val dout = Output(UInt(32.W))
-    val dbg = new Debug
+    val dbg  = new Debug
   })
 
   import State._
@@ -63,14 +57,14 @@ class Leros(size: Int, memSize: Int, prog: String, fmaxReg: Boolean) extends Mod
   val accu = alu.io.accu
 
   // The main architectural state
-  val pcReg = RegInit(0.U(memSize.W))
+  val pcReg   = RegInit(0.U(memSize.W))
   val addrReg = RegInit(0.U(memSize.W))
 
   val stateReg = RegInit(feDec)
 
-  switch (stateReg) {
-    is (feDec) { stateReg := exe }
-    is (exe) { stateReg := feDec }
+  switch(stateReg) {
+    is(feDec) { stateReg := exe }
+    is(exe) { stateReg := feDec }
   }
 
   val pcNext = WireDefault(pcReg + 1.U)
@@ -83,13 +77,12 @@ class Leros(size: Int, memSize: Int, prog: String, fmaxReg: Boolean) extends Mod
   val decReg = RegInit(DecodeOut.default)
   val opdReg = RegInit(0.U(size.W))
 
-
-  val registerMem = SyncReadMem(256, UInt(32.W))
+  val registerMem  = SyncReadMem(256, UInt(32.W))
   val registerRead = registerMem.read(instr(15, 0))
 
   // Data memory
   // TODO: shall be byte write addressable
-  val dataMem = SyncReadMem(1 << memSize, UInt(32.W))
+  val dataMem  = SyncReadMem(1 << memSize, UInt(32.W))
   val dataRead = dataMem.read(Mux(decReg.isLoadAddr && stateReg === exe, accu, addrReg))
 
   // Decode
@@ -106,41 +99,41 @@ class Leros(size: Int, memSize: Int, prog: String, fmaxReg: Boolean) extends Mod
   op24sex := instr(7, 0).asSInt
   when(decout.nosext) {
     operand := (0.U(24.W) ## instr(7, 0)).asSInt // no sign extension
-  } .elsewhen(decout.enahi) {
+  }.elsewhen(decout.enahi) {
     operand := (op24sex.asUInt ## accu(7, 0)).asSInt
-  } .elsewhen(decout.enah2i) {
+  }.elsewhen(decout.enah2i) {
     operand := (op16sex.asUInt ## accu(15, 0)).asSInt
-  } .elsewhen(decout.enah3i) {
+  }.elsewhen(decout.enah3i) {
     operand := (instr(7, 0) ## accu(23, 0)).asSInt
-  } .otherwise {
+  }.otherwise {
     operand := instr(7, 0).asSInt
   }
 
   // For now do a sequential version of Leros.
   // Later decide where the pipeline registers are placed.
 
-  alu.io.op := decReg.op
+  alu.io.op  := decReg.op
   alu.io.ena := decReg.ena & (stateReg === exe)
   alu.io.din := Mux(decReg.isLoadInd, dataRead, Mux(decReg.isRegOpd, registerRead, opdReg))
 
   switch(stateReg) {
-    is (feDec) {
+    is(feDec) {
       decReg := decout
       opdReg := operand.asUInt
     }
 
-    is (exe) {
+    is(exe) {
       pcReg := pcNext
-      when (decReg.isStore) {
+      when(decReg.isStore) {
         registerMem.write(opdReg(15, 0), accu)
       }
-      when (decReg.isLoadAddr) {
+      when(decReg.isLoadAddr) {
         addrReg := accu
       }
-      when (decReg.isLoadInd) {
+      when(decReg.isLoadInd) {
         // nothing to be done here
       }
-      when (decReg.isStoreInd) {
+      when(decReg.isStoreInd) {
         dataMem.write(addrReg, accu)
       }
     }
@@ -156,18 +149,19 @@ class Leros(size: Int, memSize: Int, prog: String, fmaxReg: Boolean) extends Mod
   io.dout := 42.U
 
   if (fmaxReg) {
-    io.dbg.acc := RegNext(RegNext((accu)))
-    io.dbg.pc := RegNext(RegNext((pcReg)))
+    io.dbg.acc   := RegNext(RegNext((accu)))
+    io.dbg.pc    := RegNext(RegNext((pcReg)))
     io.dbg.instr := RegNext(RegNext((instr)))
-    io.dbg.exit := RegNext(RegNext((exit)))
+    io.dbg.exit  := RegNext(RegNext((exit)))
   } else {
-    io.dbg.acc := ((accu))
-    io.dbg.pc := ((pcReg))
+    io.dbg.acc   := ((accu))
+    io.dbg.pc    := ((pcReg))
     io.dbg.instr := ((instr))
-    io.dbg.exit := ((exit))
+    io.dbg.exit  := ((exit))
   }
 }
 
 object Leros extends App {
-    (new chisel3.stage.ChiselStage).emitVerilog(new Leros(32, 10, args(0), true), Array("--target-dir", "generated"))
+  // (new chisel3.stage.ChiselStage).emitVerilog(new Leros(32, 10, args(0), true), Array("--target-dir", "generated"))
+  (new chisel3.stage.ChiselStage).emitFirrtl(new Leros(32, 10, args(0), true), Array("--target-dir", "generated"))
 }
