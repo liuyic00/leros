@@ -3,13 +3,20 @@ APP=base
 TESTS="base lhi lhi2 lognosign reg imm mem"
 TESTPATH=asm
 
-formal:
+prop:
 	make hw
 	cd generated ;\
 	$$FIRRTL -i Leros.hi.fir -E low -fil Leros -o Leros.il.lo.fir ;\
 	$$FIRRTL -i Leros.hi.fir -E low ;\
 	$$FIRRTL -i Leros.hi.fir -E verilog ;\
 	$$FIRRTL -i Leros.hi.fir -E sverilog
+
+prop-alu:
+	sbt "runMain leros.formal.AluAccuProp" ;\
+	cd generated ;\
+	$$FIRRTL -i AluAccuPropAll.hi.fir -E low ;\
+	$$FIRRTL -i AluAccuPropAll.hi.fir -E low -fil AluAccuPropAll -o AluAccuPropAll.il.opt.lo.fir ;\
+	$$FIRRTL -i AluAccuPropAll.il.opt.lo.fir -E smt2
 
 hwsim:
 	sbt -Dprogram=$(APP) "testOnly leros.LerosTest"
