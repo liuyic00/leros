@@ -1,13 +1,13 @@
 package leros.sim
 
-import org.scalatest._
+import org.scalatest.flatspec._
+import org.scalatest.matchers.should._
 
-class LerosSimSpec extends FlatSpec with Matchers {
-
+class LerosSimSpec extends AnyFlatSpec with Matchers {
 
   "Leros simulation" should "pass" in {
 
-    val path = sys.props.getOrElse("testpath", "asm")
+    val path  = sys.props.getOrElse("testpath", "asm")
     val progs = leros.shared.Util.getProgs()
     progs.foreach(p => {
       val program = path + "/" + p + ".s"

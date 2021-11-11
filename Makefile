@@ -22,7 +22,7 @@ hw:
 	sbt "runMain leros.Leros asm/$(APP).s"
 
 test-alu:
-	sbt "test:runMain leros.AluTester"
+	sbt "test:runMain leros.AluAccuTester"
 
 all: all-hwsim all-swsim
 
