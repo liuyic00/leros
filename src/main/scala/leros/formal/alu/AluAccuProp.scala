@@ -1,4 +1,4 @@
-package leros.formal
+package leros.formal.alu
 
 import leros._
 import leros.Types._

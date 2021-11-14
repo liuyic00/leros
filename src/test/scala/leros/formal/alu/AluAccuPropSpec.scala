@@ -1,4 +1,4 @@
-package leros.formal
+package leros.formal.alu
 
 import org.scalatest.flatspec._
 import chiseltest._

@@ -12,7 +12,7 @@ prop:
 	$$FIRRTL -i Leros.hi.fir -E sverilog
 
 prop-alu:
-	sbt "runMain leros.formal.AluAccuProp" ;\
+	sbt "runMain leros.formal.alu.AluAccuProp" ;\
 	cd generated ;\
 	$$FIRRTL -i AluAccuPropAll.hi.fir -E low ;\
 	$$FIRRTL -i AluAccuPropAll.hi.fir -E low -fil AluAccuPropAll -o AluAccuPropAll.il.opt.lo.fir ;\
