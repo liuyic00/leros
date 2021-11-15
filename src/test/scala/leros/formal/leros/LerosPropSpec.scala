@@ -1,10 +1,8 @@
-package leros.formal
+package leros.formal.leros
 
 import org.scalatest.flatspec._
 import chiseltest._
 import chiseltest.formal._
-
-import leros._
 
 /** Verify Leros with instr in instr-mem.
   *

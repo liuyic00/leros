@@ -18,7 +18,7 @@ class LerosPropGeneral(size: Int, memSize: Int, prog: String, fmaxReg: Boolean)
     extends Leros(size, memSize, prog, fmaxReg)
     with PropGeneral
 
-object TopProp extends App {
+object LerosProp extends App {
   (new chisel3.stage.ChiselStage)
     .emitFirrtl(new LerosPropGeneral(32, 10, "asm/base.s", false), Array("--target-dir", "generated"))
 }
