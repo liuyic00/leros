@@ -15,7 +15,7 @@ prop-alu:
 	sbt "runMain leros.formal.alu.AluAccuProp" ;\
 	cd generated ;\
 	$$FIRRTL -i AluAccuPropAll.hi.fir -E low ;\
-	$$FIRRTL -i AluAccuPropAll.hi.fir -E low -fil AluAccuPropAll -o AluAccuPropAll.il.opt.lo.fir ;\
+	$$FIRRTL -i AluAccuPropAll.hi.fir -E low-opt -fil AluAccuPropAll -o AluAccuPropAll.il.opt.lo.fir ;\
 	$$FIRRTL -i AluAccuPropAll.il.opt.lo.fir -E smt2
 
 hwsim:
